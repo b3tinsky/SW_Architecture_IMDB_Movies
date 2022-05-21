@@ -11,11 +11,29 @@
   </head>
   <body>
     <div
-      class="d-flex flex-column min-vh-100 justify-content-center align-items-center"
+      class="container d-flex flex-column min-vh-100 justify-content-center align-items-center"
     >
+      <br />
       <h1 style="text-align: center">Movies</h1>
       <br />
-      {{ number }}
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Rating</th>
+            <th scope="col">Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for movie in movie_list %}
+          <tr>
+            <td>{{ movie.movie_title }}</td>
+            <td>{{ movie.rating }}</td>
+            <td>{{ movie.year }}</td>
+          </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
     </div>
 
     <!-- Bootstrap Javascripts -->

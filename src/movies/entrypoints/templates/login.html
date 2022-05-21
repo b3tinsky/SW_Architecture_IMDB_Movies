@@ -15,9 +15,14 @@
     >
       <h1 style="text-align: center">Log in</h1>
       <br />
-      <form>
+      {%- for category, message in get_flashed_messages(with_categories = true)
+      %}
+      <div class="alert alert-danger">{{ message }}</div>
+      {%- endfor %}
+      <form action="{{ request.path }}" method="post">
         <div class="input-group mb-3">
           <input
+            name="username"
             type="text"
             class="form-control"
             placeholder="Username"
@@ -28,17 +33,18 @@
 
         <div class="input-group mb-3">
           <input
+            name="email"
             type="text"
             class="form-control"
             placeholder="Email"
-            aria-label="Recipient's username"
+            aria-label="Email"
             aria-describedby="basic-addon2"
           />
         </div>
-                <div class="input-group mb-3">
+        <div class="input-group mb-3">
           <div class="input-group-prepend">
             <div class="input-group-text">
-              <input type="checkbox" />&nbsp;Ascending&nbsp;
+              <input type="checkbox" name="sorted" value="ascending"/>&nbsp;Ascending&nbsp;
             </div>
           </div>
         </div>

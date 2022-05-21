@@ -28,6 +28,21 @@ class users(db.Model):
         self.preference_3 = preference_3
         self.preference_key = preference_key
 
+class movies(db.Model):
+    movie_id = db.Column(db.Integer, primary_key=True)
+    preference_key = db.Column(db.Integer)
+    movie_title = db.Column(db.String)
+    rating = db.Column(db.Float)
+    year = db.Column(db.Integer)
+    create_time = db.Column(db.TIMESTAMP(timezone=True), index=True)
+    
+    def __init__(self, preference_key, movie_title, rating, year, create_time):   
+        self.preference_key = preference_key
+        self.movie_title = movie_title
+        self.rating = rating
+        self.year = year
+        self.create_time = create_time
+
 @app.route("/", methods=["GET"])
 def home():
     return render_template("home.html"), 200
@@ -58,19 +73,25 @@ def register():
     return render_template("register.html"), 200
 
 
-@app.route("/login", methods=["GET"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    # test = {"one":1, "two":2, "three":3}
-    # test = str(preference_key_gen())
-    # test = movie_fetcher.main()
+    if request.method == "POST":
+        if not request.form['username'] or not request.form['email']:
+            flash('Please enter all the fields', 'error')
+        
+        elif(users.query.filter_by(username=request.form['username']).first() != users.query.filter_by(email=request.form['email']).first()):
+            flash('Invalid credentials', 'info')
+            
+        else:
+            return redirect(url_for('movielist'))
+
+
 
     return render_template("login.html"), 200
 
 
-@app.route("/movies", methods=["GET"])
-def movies():
-    # test = {"one":1, "two":2, "three":3}
-    test = str(preference_key_gen())
-    # test = movie_fetcher.main()
+@app.route("/movielist", methods=["GET"])
+def movielist():
+    movie_list = movies.query.filter_by(preference_key=1).all()
 
-    return render_template("movies.html", number=test), 200
+    return render_template("movies.html", movie_list=movie_list), 200
