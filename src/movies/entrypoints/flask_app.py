@@ -1,6 +1,6 @@
 from flask import Flask, request, flash, url_for, redirect, render_template
 from movies import models
-from preferenceKeyGen import preference_key_gen
+from preferenceKeyGen import preference_key_gen as PFGenerator
 from movies import movie_fetcher
 from flask_sqlalchemy import SQLAlchemy
 
@@ -18,13 +18,15 @@ class users(db.Model):
     preference_1 = db.Column(db.Integer)
     preference_2 = db.Column(db.Integer)
     preference_3 = db.Column(db.Integer)
+    preference_key = db.Column(db.Integer)
 
-    def __init__(self, username, email, preference_1, preference_2, preference_3):   
+    def __init__(self, username, email, preference_1, preference_2, preference_3, preference_key):   
         self.username = username
         self.email = email
         self.preference_1 = preference_1
         self.preference_2 = preference_2
         self.preference_3 = preference_3
+        self.preference_key = preference_key
 
 @app.route("/", methods=["GET"])
 def home():
@@ -47,7 +49,8 @@ def register():
 
         else:
             preferencesList = request.form.getlist('preferences')
-            user = users(request.form['username'], request.form['email'], int(preferencesList[0]), int(preferencesList[1]), int(preferencesList[2]))
+            preferenceKey = PFGenerator(int(preferencesList[0]), int(preferencesList[1]), int(preferencesList[2]))
+            user = users(request.form['username'], request.form['email'], int(preferencesList[0]), int(preferencesList[1]), int(preferencesList[2]), preferenceKey)
             db.session.add(user)
             db.session.commit()
             return redirect(url_for('home'))
