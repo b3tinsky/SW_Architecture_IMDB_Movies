@@ -6,3 +6,12 @@ CREATE TABLE IF NOT EXISTS movies (
     year INTEGER NOT NULL,
     created_at DATE NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    user_id serial PRIMARY KEY,
+    username VARCHAR NOT NULL,
+    email VARCHAR NOT NULL,
+    preference_1 INTEGER NOT NULL,
+    preference_2 INTEGER NOT NULL,
+    preference_3 INTEGER NOT NULL
+);

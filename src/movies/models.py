@@ -41,6 +41,16 @@ class Movie(Base):
     year = Column(Integer)
     create_time = Column(TIMESTAMP(timezone=True), index=True)
 
+class User(Base):
+    __tablename__ = "users"
+
+    user_id = Column(Integer, primary_key=True)
+    username = Column(String)
+    email = Column(String)
+    preference_1 = Column(Integer)
+    preference_2 = Column(Integer)
+    preference_3 = Column(Integer)
+
 
 def start_mappers():
     Base.metadata.create_all(engine)
