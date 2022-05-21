@@ -13,5 +13,6 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR NOT NULL,
     preference_1 INTEGER NOT NULL,
     preference_2 INTEGER NOT NULL,
-    preference_3 INTEGER NOT NULL
+    preference_3 INTEGER NOT NULL,
+    preference_key INTEGER NOT NULL,
 );

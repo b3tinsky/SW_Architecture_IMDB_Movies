@@ -50,6 +50,7 @@ class User(Base):
     preference_1 = Column(Integer)
     preference_2 = Column(Integer)
     preference_3 = Column(Integer)
+    preference_key = Column(Integer)
 
 
 def start_mappers():
