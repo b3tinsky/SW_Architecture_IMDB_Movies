@@ -83,15 +83,20 @@ def login():
             flash('Invalid credentials', 'info')
             
         else:
-            return redirect(url_for('movielist'))
-
+            sort = 'desc'
+            if (request.form.get('sorted')): sort = 'asc' 
+            return redirect(url_for('movielist', sort = sort))
 
 
     return render_template("login.html"), 200
 
 
-@app.route("/movielist", methods=["GET"])
-def movielist():
-    movie_list = movies.query.filter_by(preference_key=1).all()
+@app.route("/movielist/<sort>", methods=["GET"])
+def movielist(sort):
+    if(sort=='asc'):
+        movie_list = movies.query.filter_by(preference_key=1).order_by(movies.rating.asc()).all()
+    else:
+        movie_list = movies.query.filter_by(preference_key=1).order_by(movies.rating.desc()).all()
+
 
     return render_template("movies.html", movie_list=movie_list), 200
