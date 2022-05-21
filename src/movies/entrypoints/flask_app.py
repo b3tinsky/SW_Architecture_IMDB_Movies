@@ -45,6 +45,8 @@ class movies(db.Model):
 
 @app.route("/", methods=["GET"])
 def home():
+    if(len(movies.query.all()) == 0):
+        movie_fetcher.main()
     return render_template("home.html"), 200
 
 
