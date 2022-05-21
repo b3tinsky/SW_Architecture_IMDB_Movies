@@ -38,6 +38,12 @@ def register():
             flash('Please enter all the fields', 'error')
         if (len(request.form.getlist('preferences')) != 3):
             flash('Please select 3 categories', 'error')
+        
+        elif ( users.query.filter_by(username=request.form['username']).first() is not None or users.query.filter_by(email=request.form['email']).first() is not None ):
+            if(users.query.filter_by(username=request.form['username']).first() is not None):
+                flash('Username already exists', 'error')
+            if(users.query.filter_by(email=request.form['email']).first() is not None):
+                flash('Email already exists', 'error')
 
         else:
             preferencesList = request.form.getlist('preferences')
