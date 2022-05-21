@@ -1,0 +1,11 @@
+# Run server
+sudo docker-compose --env-file config/dev.env up
+
+# Run database
+sudo docker-compose --env-file config/dev.env exec postgres psql -h localhost -U movies movies
+
+# Run container
+sudo docker-compose exec app bash
+
+# View project
+http://localhost:5005/hello
