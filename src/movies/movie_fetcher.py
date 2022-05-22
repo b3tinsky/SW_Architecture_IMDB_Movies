@@ -32,7 +32,8 @@ class movies(db.Model):
         self.year = year
         self.create_time = create_time
 
-# O - Open/Closed
+# S - Single responsibility: Handles fetching the movies
+# O - Open/Closed: Can later add fetching for other sites
 class Fetcher(ABC):
     @abstractmethod
     def fetch():

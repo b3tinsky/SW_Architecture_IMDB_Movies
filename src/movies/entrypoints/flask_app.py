@@ -1,6 +1,6 @@
 from flask import Flask, request, flash, url_for, redirect, render_template
 from movies import models
-from preferenceKeyGen import preference_key_gen as PFGenerator
+from preferenceKeyGen import PreferenceAlgorithm
 from movies import movie_fetcher as MF
 from flask_sqlalchemy import SQLAlchemy
 
@@ -76,7 +76,7 @@ def register():
 
         else:
             preferencesList = request.form.getlist('preferences')
-            preferenceKey = PFGenerator(int(preferencesList[0]), int(
+            preferenceKey = PreferenceAlgorithm.keyGenerator(int(preferencesList[0]), int(
                 preferencesList[1]), int(preferencesList[2]))
             user = users(request.form['username'], request.form['email'], int(
                 preferencesList[0]), int(preferencesList[1]), int(preferencesList[2]), preferenceKey)
@@ -100,18 +100,21 @@ def login():
             sort = 'desc'
             if (request.form.get('sorted')):
                 sort = 'asc'
-            return redirect(url_for('movielist', sort=sort))
+            flash(sort, 'info')
+            credentials = users.query.filter_by(username=request.form['username']).first()
+            
+            return redirect(url_for('movielist', sort=sort, preference=credentials.preference_key))
 
     return render_template("login.html"), 200
 
 
-@app.route("/movielist/<sort>", methods=["GET"])
-def movielist(sort):
+@app.route("/movielist/<preference>/<sort>", methods=["GET"])
+def movielist(sort, preference):
     if(sort == 'asc'):
         movie_list = movies.query.filter_by(
-            preference_key=1).order_by(movies.rating.asc()).all()
+            preference_key=preference).order_by(movies.rating.asc()).all()
     else:
         movie_list = movies.query.filter_by(
-            preference_key=1).order_by(movies.rating.desc()).all()
+            preference_key=preference).order_by(movies.rating.desc()).all()
 
     return render_template("movies.html", movie_list=movie_list), 200
