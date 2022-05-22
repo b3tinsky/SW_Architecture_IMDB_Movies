@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from flask import Flask, request
 from datetime import datetime
 import requests
@@ -31,65 +32,66 @@ class movies(db.Model):
         self.year = year
         self.create_time = create_time
 
-# DEFAULT_SESSION_FACTORY = sessionmaker(
-#     bind=create_engine(
-#         get_postgres_uri(),
-#         isolation_level="REPEATABLE READ",
-#     )
-# )
-# session = DEFAULT_SESSION_FACTORY()
+# O - Open/Closed
+class Fetcher(ABC):
+    @abstractmethod
+    def fetch():
+        pass
+    
+    @abstractmethod
+    def toDatabase():
+        pass
+    
+    @abstractmethod
+    def toCSV():
+        pass
 
+class IMDBFetcher(Fetcher):
+    def fetch(self):
+        # Downloading imdb top 250 movie's data
+        url = 'http://www.imdb.com/chart/top'
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'lxml')
 
-def main():
-    # Downloading imdb top 250 movie's data
-    url = 'http://www.imdb.com/chart/top'
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'lxml')
+        # Separating response components
+        moviesSoup = soup.select('td.titleColumn')
+        links = [a.attrs.get('href') for a in soup.select('td.titleColumn a')]
+        crew = [a.attrs.get('title') for a in soup.select('td.titleColumn a')]
+        ratings = [b.attrs.get('data-value') for b in soup.select('td.posterColumn span[name=ir]')]
+        votes = [b.attrs.get('data-value') for b in soup.select('td.ratingColumn strong')]
 
-    moviesSoup = soup.select('td.titleColumn')
-    links = [a.attrs.get('href') for a in soup.select('td.titleColumn a')]
-    crew = [a.attrs.get('title') for a in soup.select('td.titleColumn a')]
-    ratings = [b.attrs.get('data-value') for b in soup.select('td.posterColumn span[name=ir]')]
-    votes = [b.attrs.get('data-value') for b in soup.select('td.ratingColumn strong')]
+        movieList = []
+        for index in range(0, len(moviesSoup)):
 
-    # create a empty list for storing
-    # movie information
-    list = []
+            # Separating movie into: 'place','title', 'year'
+            movie_string = moviesSoup[index].get_text()
+            movie = (' '.join(movie_string.split()).replace('.', ''))
+            movie_title = movie[len(str(index)) + 1:-7]
+            year = re.search('\((.*?)\)', movie_string).group(1)
+            place = movie[:len(str(index)) - (len(movie))]
 
-    # Iterating over moviesSoup to extract
-    # each movie's details
-    for index in range(0, len(moviesSoup)):
-        # Separating movie into: 'place',
-        # 'title', 'year'
-        movie_string = moviesSoup[index].get_text()
-        movie = (' '.join(movie_string.split()).replace('.', ''))
-        movie_title = movie[len(str(index)) + 1:-7]
-        year = re.search('\((.*?)\)', movie_string).group(1)
-        place = movie[:len(str(index)) - (len(movie))]
+            data = {"movie_title": movie_title,
+                    "year": year,
+                    "place": place,
+                    "star_cast": crew[index],
+                    "rating": ratings[index],
+                    "vote": votes[index],
+                    "link": links[index],
+                    "preference_key": index % 4 + 1}
+            movieList.append(data)
 
-        # data = {"movie_title": movie_title,
-        #         "year": year,
-        #         "place": place,
-        #         "star_cast": crew[index],
-        #         "rating": ratings[index],
-        #         "vote": votes[index],
-        #         "link": links[index],
-        #         "preference_key": index % 4 + 1}
+        return movieList
 
-        movieObj = movies(index % 4 + 1, movie_title, ratings[index], year, datetime.now())
-        db.session.add(movieObj)
-        db.session.commit()
-        
-        # list.append(data)
+    def toDatabase(self, movieList):
+        for movie in movieList:
+            movieObj = movies(movie['preference_key'], movie['movie_title'], movie['rating'], movie['year'], datetime.now())
+            db.session.add(movieObj)
+            db.session.commit()
 
-    # fields = ["preference_key", "movie_title", "star_cast", "rating", "year", "place", "vote", "link"]
-    # print(list[0]['movie_title'])
-    # return list[0]
-    # with open("movie_results.csv", "w", newline="") as file:
-    #     writer = csv.DictWriter(file, fieldnames=fields)
-    #     writer.writeheader()
-    #     for movie in list:
-    #         writer.writerow({**movie})
-
-if __name__ == '__main__':
-    main()
+    def toCSV(self, movieList):
+        fields = ["preference_key", "movie_title", "star_cast", "rating", "year", "place", "vote", "link"]
+        with open("movie_results.csv", "w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=fields)
+            writer.writeheader()
+            for movie in movieList:
+                writer.writerow({**movie})
