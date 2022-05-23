@@ -1,50 +1,10 @@
 from flask import Flask, request, flash, url_for, redirect, render_template
-from movies import models
 from preferenceKeyGen import PreferenceAlgorithm
 from movies import movie_fetcher as MF
-from flask_sqlalchemy import SQLAlchemy
+from movies.entrypoints.app import Website, users, movies
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = models.get_postgres_uri()
-app.config['SECRET_KEY'] = "B3TINSKY"
-models.start_mappers()
-
-db = SQLAlchemy(app)
-
-
-class users(db.Model):
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String)
-    email = db.Column(db.String)
-    preference_1 = db.Column(db.Integer)
-    preference_2 = db.Column(db.Integer)
-    preference_3 = db.Column(db.Integer)
-    preference_key = db.Column(db.Integer)
-
-    def __init__(self, username, email, preference_1, preference_2, preference_3, preference_key):
-        self.username = username
-        self.email = email
-        self.preference_1 = preference_1
-        self.preference_2 = preference_2
-        self.preference_3 = preference_3
-        self.preference_key = preference_key
-
-
-class movies(db.Model):
-    movie_id = db.Column(db.Integer, primary_key=True)
-    preference_key = db.Column(db.Integer)
-    movie_title = db.Column(db.String)
-    rating = db.Column(db.Float)
-    year = db.Column(db.Integer)
-    create_time = db.Column(db.TIMESTAMP(timezone=True), index=True)
-
-    def __init__(self, preference_key, movie_title, rating, year, create_time):
-        self.preference_key = preference_key
-        self.movie_title = movie_title
-        self.rating = rating
-        self.year = year
-        self.create_time = create_time
-
+app = Website.app
+db = Website.db
 
 @app.route("/", methods=["GET"])
 def home():
@@ -55,7 +15,6 @@ def home():
         
         # Upload them to DB
         fetcher.toDatabase(fetcher.fetch())
-        
         
     return render_template("home.html"), 200
 
@@ -100,7 +59,6 @@ def login():
             sort = 'desc'
             if (request.form.get('sorted')):
                 sort = 'asc'
-            flash(sort, 'info')
             credentials = users.query.filter_by(username=request.form['username']).first()
             
             return redirect(url_for('movielist', sort=sort, preference=credentials.preference_key))

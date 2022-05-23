@@ -1,39 +1,18 @@
 from abc import ABC, abstractmethod
-from flask import Flask, request
 from datetime import datetime
 import requests
 import re
 import csv
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from flask_sqlalchemy import SQLAlchemy
 from bs4 import BeautifulSoup
-from movies import models
+from movies.entrypoints.app import Website, movies
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = models.get_postgres_uri()
-app.config['SECRET_KEY'] = "B3TINSKY"
-models.start_mappers()
-
-db = SQLAlchemy(app)
-
-class movies(db.Model):
-    movie_id = db.Column(db.Integer, primary_key=True)
-    preference_key = db.Column(db.Integer)
-    movie_title = db.Column(db.String)
-    rating = db.Column(db.Float)
-    year = db.Column(db.Integer)
-    create_time = db.Column(db.TIMESTAMP(timezone=True), index=True)
-    
-    def __init__(self, preference_key, movie_title, rating, year, create_time):   
-        self.preference_key = preference_key
-        self.movie_title = movie_title
-        self.rating = rating
-        self.year = year
-        self.create_time = create_time
+app = Website.app
+db = Website.db
 
 # S - Single responsibility: Handles fetching the movies
 # O - Open/Closed: Can later add fetching for other sites
+# I - Interface Segregation: Specific to the source used to fetch
+
 class Fetcher(ABC):
     @abstractmethod
     def fetch():
