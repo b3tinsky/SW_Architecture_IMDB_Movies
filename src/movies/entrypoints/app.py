@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, request, flash, url_for, redirect, render_template
+from flask import Flask
 from movies import models
 
 class Singleton(type):

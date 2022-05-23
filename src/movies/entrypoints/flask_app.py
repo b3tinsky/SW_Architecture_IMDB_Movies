@@ -1,4 +1,4 @@
-from flask import Flask, request, flash, url_for, redirect, render_template
+from flask import request, flash, url_for, redirect, render_template
 from preferenceKeyGen import PreferenceAlgorithm
 from movies import movie_fetcher as MF
 from movies.entrypoints.app import Website, users, movies
